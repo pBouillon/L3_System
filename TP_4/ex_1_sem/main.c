@@ -54,13 +54,6 @@ void create_child ()
 
         kill (pid, SIGTERM) ;
         waitpid(pid, &status, 0) ;
-
-        printf (
-            "%s%d\n", 
-            "shared_variable value: ", 
-            (*p_shared_variable)
-        );
-        exit(EXIT_SUCCESS) ;
     }
 }
 
@@ -95,6 +88,11 @@ int main(int argc, char const *argv[])
     init_vars () ;
     create_child() ;
 
+    printf (
+            "%s%d\n", 
+            "shared_variable value: ", 
+            (*p_shared_variable)
+        );
     p_shared_variable = 0 ;
 
     return 0;
