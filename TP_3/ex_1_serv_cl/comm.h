@@ -17,8 +17,8 @@
 
 typedef struct msgbuf 
 {
-    long mtype ;
-    int  value ;
+    long  mtype ;
+    int   value ;
 } payload ;
 
 #endif 

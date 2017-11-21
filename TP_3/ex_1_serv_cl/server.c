@@ -14,28 +14,29 @@
 
 #include "comm.h"
 
-int queue_id ;
+int queue_id ; /*!< int : ID of the used queue */
+
 
 /**
- *
+ *  \fn abort_server
  */
 int abort_server (char* msg, int err_id) 
 {
     fprintf (stderr, "\n%s\n", msg) ;
     exit (err_id) ;
-}
+} /* abort_server (char* msg, int err_id) */
 
 /**
- *
+ *  \fn destruct
  */
 void destruct (int signal)
 {
     printf ("%s\n", "Server: Exciting...") ;
     msgctl(queue_id, IPC_RMID, 0) ;
-}
+} /* destruct (int signal) */
 
 /**
- *
+ *  \fn init_queue
  */
 int init_queue (key_t key) 
 {
@@ -43,26 +44,26 @@ int init_queue (key_t key)
               key,
               IPC_CREAT | 0660 | IPC_EXCL  
             ) ;
-}
+} /* init_queue (key_t key) */
 
 /**
- *
+ *  \fn get_key
  */
 key_t get_key () 
 {
     return ftok(SOURCE_FILE, PROJECT_ID) ;
-}
+} /* get_key() */
 
 /**
- *
+ *  \fn get_queue_num
  */
 int get_queue_num (int key) 
 {
     return msgget(key, 0) ;
-}
+} /* get_queue_num (int key) */
 
 /**
- *
+ *  \fn read_message
  */
 int read_message (int queue_num, payload *buff) 
 {
@@ -73,10 +74,10 @@ int read_message (int queue_num, payload *buff)
             CLIENT_MSG_TYPE, 
             0
         ) ;
-}
+} /* read_message (int queue_num, payload *buff) */
 
 /**
- *
+ *  \fn send_message
  */
 int send_message (int queue_num, int val) 
 {
@@ -91,9 +92,10 @@ int send_message (int queue_num, int val)
             sizeof(payload) - sizeof(long), 
             MSG_GET_FLAGS
         ) ;
-}
+} /* send_message (int queue_num, int val) */
 
 /**
+ *  \fn set_mask
  */
 void set_mask ()
 {
@@ -103,7 +105,7 @@ void set_mask ()
     sa.sa_flags   = 0 ;
     sigemptyset (&(sa.sa_mask)) ;
     sigaction (SIGINT, &sa, NULL) ;
-}
+} /* set_mask () */
 
 
 

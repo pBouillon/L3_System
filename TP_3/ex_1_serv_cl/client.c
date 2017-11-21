@@ -15,32 +15,32 @@
 
 
 /**
- *
+ *  \fn abort_client
  */
 int abort_client (char* msg, int err_id) 
 {
     fprintf (stderr, "%s\n", msg) ;
     exit (err_id) ;
-}
+} /* abort_client (char* msg, int err_id) */
 
 /**
- *
+ *  \fn get_key
  */
 key_t get_key () 
 {
     return ftok(SOURCE_FILE, PROJECT_ID) ;
-}
+} /* get_key () */
 
 /**
- *
+ *  \fn get_queue_num
  */
 int get_queue_num (int key) 
 {
     return msgget(key, 0) ;
-}
+} /* get_queue_num (int key) */
 
 /**
- *
+ *  \fn read_message
  */
 int read_message (int queue_num, payload *buff) 
 {
@@ -51,10 +51,10 @@ int read_message (int queue_num, payload *buff)
             SERVER_MSG_TYPE, 
             0
         ) ;
-}
+} /* read_message (int queue_num, payload *buff) */
 
 /**
- *
+ *  \fn send_message
  */
 int send_message (int queue_num, int val) 
 {
@@ -69,7 +69,7 @@ int send_message (int queue_num, int val)
             sizeof(payload) - sizeof(long), 
             MSG_GET_FLAGS
         ) ;
-}
+} /* send_message (int queue_num, int val) */
 
 
 /* main */
