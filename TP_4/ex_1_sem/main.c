@@ -6,6 +6,8 @@
  * \version 0.0.1
  */
 
+#include <sys/shm.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -15,6 +17,7 @@
 
 #include "ressources.h"
 
+int  seg_id ;
 int* p_shared_variable ;
 
 
@@ -37,23 +40,19 @@ void create_child ()
 
     if ((pid = fork()) < 0) 
     {
-        abort_prog("Unable to perform `fork`", EXIT_FAILURE) ;
+        abort_prog ("Unable to perform `fork`", EXIT_FAILURE) ;
     }
     // Child process
     else if (pid == 0) 
     {
         increment (CHILD_STEP) ;
-        exit(EXIT_SUCCESS) ;
+        exit (EXIT_SUCCESS) ;
     }
     // Parent process
     else 
     {
-        sleep(1) ;
-
         increment (FATHER_STEP) ;
-
-        kill (pid, SIGTERM) ;
-        waitpid(pid, &status, 0) ;
+        wait (NULL) ;
     }
 }
 
@@ -66,9 +65,9 @@ void increment (int step)
 
     for (i = 0; i < INCREMENTS; ++i)
     {
-        int tmp = (*p_shared_variable) ;
+        int tmp = *p_shared_variable ;
         tmp += step ;
-        (*p_shared_variable) = tmp ;
+        *p_shared_variable = tmp ;
     }
 }
 
@@ -79,8 +78,23 @@ void init_vars ()
 {
     int shared_variable ;
 
-    shared_variable   = SHARED_VAR_INIT_VAL ;
-    p_shared_variable = &shared_variable  ;
+    seg_id = shmget (IPC_PRIVATE, sizeof(int), IPC_CREAT|0660) ;
+    if (seg_id < 0) 
+    {
+        abort_prog (
+            "Failed to create a shared memory space", 
+            EXIT_FAILURE
+        ) ;
+    }
+
+    p_shared_variable = (int*) shmat (seg_id, NULL, 0) ;
+    if (p_shared_variable == NULL) 
+    {
+        abort_prog (
+            "Unable to get a pointer on shared memory",
+            EXIT_FAILURE
+        ) ;
+    }
 } /* init_vars () */
 
 int main(int argc, char const *argv[])
@@ -93,7 +107,8 @@ int main(int argc, char const *argv[])
             "shared_variable value: ", 
             (*p_shared_variable)
         );
-    p_shared_variable = 0 ;
+    shmdt (p_shared_variable) ;
+    shmctl (seg_id, IPC_RMID, 0);
 
-    return 0;
+    return 0 ;
 }
