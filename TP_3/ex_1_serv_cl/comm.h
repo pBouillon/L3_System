@@ -1,5 +1,5 @@
-#ifndef COMM
-#define COMM
+#ifndef COMM_H_
+#define COMM_H_
 
 #define     PROJECT_ID           2
 #define     SOURCE_FILE          "./server.c"

@@ -1,0 +1,27 @@
+C'est un des langages les plus utilisés car :
+
+    il existe depuis le début des années 1970 ;
+    il est fondé sur un standard ouvert ;
+    de nombreux informaticiens le connaissent ;
+    étant du plus bas niveau portable possible, il permet la minimisation de l'allocation mémoire nécessaire et la maximisation de la performance, notamment par l'utilisation de pointeurs ;
+    des compilateurs et bibliothèques logicielles existent sur la plupart des architectures ;
+    il a influencé de nombreux langages plus récents dont C++, Java, C# et PHP ; sa syntaxe en particulier est largement reprise ;
+    il met en œuvre un nombre restreint de concepts, ce qui facilite sa maîtrise et l'écriture de compilateurs simples et rapides ;
+    il ne spécifie pas rigidement le comportement du fichier exécutable produit, ce qui aide à tirer parti des capacités propres à chaque ordinateur ;
+    il permet l'écriture de logiciels qui n'ont besoin d'aucun support à l'exécution (ni bibliothèque logicielle ni machine virtuelle), au comportement prévisible en temps d'exécution comme en consommation de mémoire vive, comme des noyaux de système d'exploitation et des logiciels embarqués.
+
+Ses principaux inconvénients sont :
+
+    le peu de vérifications offertes par les compilateurs d'origine (K&R C), et l'absence de vérifications à l'exécution, ce qui fait que des erreurs qui auraient pu être automatiquement détectées lors du développement ne l’étaient qu’à l'exécution, donc au prix d’un plantage du logiciel.
+        Sous UNIX, on pouvait utiliser les utilitaires lint et cflow pour éviter de tels mécomptes.
+        Des vérifications sont ajoutées avec le temps, mais elles restent partielles ;
+    son approche de la modularité restée au niveau de ce qui se faisait au début des années 1970, et largement dépassée depuis par d'autres langages :
+        il ne facilite pas la programmation orientée objet ;
+        il ne permet pas de créer des espaces de noms ;
+    la gestion d'exceptions très sommaire ;
+    le support très limité de la généricité, malgré l’introduction des expressions à type générique en C11 ;
+    les subtilités de l'écriture de programmes portables, car le comportement exact des exécutables dépend de l'ordinateur cible ;
+    le support minimaliste de l'allocation de mémoire et des chaînes de caractères, ce qui oblige les programmeurs à s'occuper de détails fastidieux et sources de bugs ; il n'y a notamment pas de ramasse-miettes standard ;
+    les bugs graves qui peuvent être causés par un simple manque d'attention du développeur ; tel le dépassement de tampon qui constitue une faille de sécurité informatique exploitable par les logiciels malveillants ;
+    certaines erreurs ne peuvent être détectées automatiquement qu'à l'aide d'outils supplémentaires et non standardisés, comme lint et Valgrind ;
+    la faible productivité du langage par rapport aux langages plus récents[réf. souhaitée].
