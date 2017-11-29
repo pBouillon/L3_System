@@ -91,10 +91,14 @@ void read_lines (char *filename, char* save_dest, int begin, int rows)
     checked_lines = 0 ;
 
     i = 0 ;
+    if (rows == 0) 
+    {
+        rows = get_file_lines(filename) ;
+    }
     while (fgets(buff, BUFF_SIZE, file) 
         && checked_lines < rows)
     {
-        if (i < rows)
+        if (i < begin)
         {
             ++i ;
             continue ;
