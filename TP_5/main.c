@@ -6,6 +6,8 @@
 
 #include "ressources.h"
 
+int save_nb = 0 ;
+
 
 /**
  *
@@ -17,7 +19,7 @@ void print_usage ()
         "%s\n", 
         "usage: ./prog <source> <filename> <begin> <lines>"
     ) ;
-    exit(EXIT_FAILURE) ;
+    exit (EXIT_FAILURE) ;
 }
 
 /**
@@ -29,7 +31,7 @@ int get_file_lines (char* filename)
     char *buff[BUFF_SIZE] ;
     int   lines ;
 
-    if(!(file = fopen(filename, "r")))
+    if (!(file = fopen(filename, "r")))
     {
        fprintf (stderr, "%s\n", "Cannot open file") ; 
        exit (EXIT_FAILURE) ;
@@ -40,7 +42,7 @@ int get_file_lines (char* filename)
     {
         ++lines ;
     }
-    fclose(file) ;
+    fclose (file) ;
 
     return lines ;
 }
@@ -48,26 +50,39 @@ int get_file_lines (char* filename)
 /**
  *
  */
-char *get_file_name (char* base_name)
+char *gen_file_name (char* base_name)
 {
-    int ts ;
+    pid_t pid ;
     char res_name[RES_FILE_NAME] ;
 
-    ts = (int)time(NULL) ;
-    return sprintf(res_name, "%s_%c.txt", base_name, ts) ;
+    ++save_nb ;
+    pid = getpid() ;
+
+    sprintf (
+        res_name, 
+        "%s_%d_%d.txt", 
+        base_name, 
+        pid,
+        save_nb
+    ) ;
+    return res_name ;
 }
 
 /**
  *
  */
-void read_lines (char *filename, int begin, int rows)
+void read_lines (char *filename, char* save_dest, int begin, int rows)
 {
     FILE *file ;
-    char *buff[BUFF_SIZE] ;
-    int   chars, words, total_words, i ;
-    int   repartition[TAILLE_NB_MOT] = {0};
 
-    if(!(file = fopen(filename, "r")))
+    char  buff[BUFF_SIZE] ;
+    char  out[RES_FILE_NAME] ;
+
+    int   chars, words, total_words, i ;
+    int   repartition[TAILLE_NB_MOT] = {0} ;
+
+
+    if (!(file = fopen(filename, "r")))
     {
        fprintf (stderr, "%s\n", "Cannot open file") ; 
        exit (EXIT_FAILURE) ;
@@ -100,7 +115,7 @@ void read_lines (char *filename, int begin, int rows)
         }
         if (words <= WORDS_LEN - 1)
         {
-            ++repartition[WORDS_LEN] ;
+            ++repartition[words] ;
         }
         else
         {
@@ -113,13 +128,21 @@ void read_lines (char *filename, int begin, int rows)
 
         if (++total_words % 10000 == 0)
         {
-            write_file (filename, words, repartition) ;
-            wait(TEMPO) ;
+            write_file (
+                gen_file_name(save_dest), 
+                words, 
+                repartition
+            ) ;
         }
     }
     
-    write_file (filename, words, repartition) ;
-    fclose(file) ; 
+    write_file (
+                (out = gen_file_name(save_dest)), 
+                words, 
+                repartition
+            ) ;
+    printf("%s %s\n", "Last file generated:", out) ;
+    fclose (file) ; 
 }
 
 /**
@@ -127,25 +150,24 @@ void read_lines (char *filename, int begin, int rows)
  */
 void write_file (char *filename, long int words, int count[]) 
 {
-    int i ;
+    int   i ;
     FILE *file ;
-    char output[RES_FILE_NAME] ;
 
-    output = get_file_name (filename) ;
+    output = gen_file_name (filename) ;
 
-    if(!(file = fopen(output, "w")))
+    if (!(file = fopen(output, "w")))
     {
        fprintf(stderr, "%s\n", "Cannot open save file") ; 
        exit (EXIT_FAILURE) ;
     }
 
-    fprintf(file, "%s\n", "Words checked: ");
+    fprintf(file, "%s\n", "Words checked: ") ;
     for (i = 0; i < WORDS_LEN; ++i)
     {
-        fprintf(file, "\t%d : %d\n", i, count[i]);
+        fprintf(file, "\t%d : %d\n", i, count[i]) ;
     }
 
-    fclose(file) ;
+    fclose (file) ;
 }
 
 /**
@@ -159,8 +181,6 @@ int main(int argc, char const *argv[])
     {
         print_usage() ;
     }
-
-    lines = get_file_lines (argv[1]) ;
 
     return 0 ;
 }
