@@ -7,17 +7,21 @@
 #define  SEPARATORS      " ,;:.!?\n"
 #define  WORDS_LEN       30
 
+#define  NO_OPT          "0"
+
 int  get_file_lines (char* filename) ;
 
-void gen_file_name (char* result, char* base_name) ;
+void gen_file_name (char *result, char *base_name) ;
 
 void print_usage () ;
+
 void read_lines (
 	char *filename, 
-	char* save_dest, 
+	char *save_dest, 
 	int begin, 
 	int rows
 ) ;
+
 void write_file (
 	char *filename, 
 	long int words, 

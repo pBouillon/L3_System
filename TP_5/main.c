@@ -1,214 +1,56 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 #include "ressources.h"
 
-int save_nb = 0 ;
 
 /**
- *
+ * \fn void create_child ()
+ * \brief create one child
  */
-void print_usage () 
+void create_child (char *source_file, char *output) 
 {
-    fprintf (
-        stderr, 
-        "%s\n", 
-        "usage: ./prog <source> <destination> <begin> <rows>"
-    ) ;
-    exit (EXIT_FAILURE) ;
-}
-
-/**
- *
- */
-int get_file_lines (char* filename)
-{
-    FILE *file ;
-    char  buff[BUFF_SIZE] ;
-    int   lines ;
-
-    if (!(file = fopen(filename, "r")))
-    {
-       fprintf (stderr, "%s\n", "Cannot open file") ; 
-       exit (EXIT_FAILURE) ;
-    }
-
-    lines = 0 ;
-    while (fgets(buff, BUFF_SIZE, file))
-    {
-        ++lines ;
-    }
-    fclose (file) ;
-
-    return lines ;
-}
-
-/**
- *
- */
-void gen_file_name (char* result, char* base_name)
-{
+    int   status ;
     pid_t pid ;
 
-    ++save_nb ;
-    pid = getpid() ;
-
-    sprintf (
-        result, 
-        "%s_%d_%d.txt", 
-        base_name, 
-        pid,
-        save_nb
-    ) ;
-}
-
-/**
- *
- */
-void read_lines (char *filename, char* save_dest, int begin, int rows)
-{
-    FILE *file ;
-
-    char  buff[BUFF_SIZE] ;
-    char  out[RES_FILE_NAME] ;
-
-    int   chars, words, total_words, checked_lines, i ;
-    int   repartition[WORDS_LEN] = {0} ;
-
-
-    if (!(file = fopen(filename, "r")))
+    if ((pid = fork()) < 0) 
     {
-       fprintf (stderr, "%s\n", "Cannot open file") ; 
-       exit (EXIT_FAILURE) ;
+        fprintf(stderr, "%s\n", "Unable to perform `fork`.");
+        exit(EXIT_FAILURE) ;
     }
-
-    chars = 0 ;
-    words = 0 ;
-    total_words = 0 ;
-    checked_lines = 0 ;
-
-    i = 0 ;
-    if (rows == 0) 
+    // Child process
+    else if (pid == 0) 
     {
-        rows = get_file_lines(filename) ;
-    }
-    while (fgets(buff, BUFF_SIZE, file) 
-        && checked_lines < rows)
-    {
-        if (i < begin)
-        {
-            ++i ;
-            continue ;
-        }
-
-        for (i = 0; i < strlen(buff); ++i) 
-        {
-            if (strchr(SEPARATORS, buff[i]) != NULL)
-            {
-                if (chars != 0)
-                {
-                    chars = 0 ;
-                    ++words ;
-                }
-            }
-            else
-            {
-                ++chars ;
-            }
-        }
-
-        if (chars != 0)
-        {
-            ++words ;
-        }
-        if (words <= WORDS_LEN - 1)
-        {
-            ++repartition[words] ;
-        }
-        else
-        {
-            ++repartition[WORDS_LEN - 1] ;
-        }
-
-        total_words += words ;
-        ++checked_lines ;
-        chars = 0 ;
-        words = 0 ;
-
-        if (++total_words % 10000 == 0)
-        {
-            gen_file_name(out, save_dest), 
-            write_file (
-                out,
-                words, 
-                repartition
+        int ret ;
+        ret = execl(
+                "./file_parser", 
+                "file_parser", 
+                source_file, 
+                output,
+                NO_OPT,
+                NO_OPT,
+                (char *)NULL
             ) ;
+        if (ret != 0)
+        {
+            fprintf(stderr, "%s\n", "`execl` failed.");
+            exit(EXIT_FAILURE) ;
         }
+        exit(EXIT_SUCCESS) ;
     }
-    
-    gen_file_name(out, save_dest), 
-    write_file (
-        out,
-        words, 
-        repartition
-    ) ;
-    printf("\n%s %s\n", "Last file generated:", out) ;
-    printf("\t[Words checked: %d]\n", total_words) ;
-    printf("\t[%d lines on %d]\n\n", checked_lines, get_file_lines(filename)) ;
-    fclose (file) ; 
+    // Parent process
+    else 
+    {
+        waitpid(pid, &status, 0) ;
+        exit(EXIT_SUCCESS) ;
+    }
 }
 
-/**
- *
- */
-void write_file (char *filename, long int words, int count[]) 
-{
-    int   i ;
-    FILE *file ;
-
-    if (!(file = fopen(filename, "w")))
-    {
-       fprintf(stderr, "%s\n", "Cannot open save file") ; 
-       exit (EXIT_FAILURE) ;
-    }
-
-    fprintf(file, "%s\n", "Words checked: ") ;
-    for (i = 0; i < WORDS_LEN; ++i)
-    {
-        fprintf(file, "\t%d : %d\n", i, count[i]) ;
-    }
-
-    fclose (file) ;
-}
-
-/**
- *
- */
 int main(int argc, char const *argv[])
 {
-    int   begin, rows;
-    char *source, *dest_name ;
-
-    if (argc != ARGS_NUM) 
-    {
-        print_usage() ;
-    }
-
-    
-    source    = (char*)argv[1] ;
-    dest_name = (char*)argv[2] ;
-    begin  = atoi(argv[3]) ;
-    rows   = atoi(argv[4]) ;
-
-    read_lines (
-        source, 
-        dest_name, 
-        begin, 
-        rows
-    ) ;
-
-    return 0 ;
+    create_child ((char*)argv[1], (char*)argv[2 ]) ;
+    return 0;
 }
