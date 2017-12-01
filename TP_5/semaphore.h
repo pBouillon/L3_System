@@ -14,4 +14,4 @@ int sem_list (int* sem_id, int sem_num) ;
 
 int get_key () ;
 
-#endif // SEMAPHORE_H_
+#endif /* SEMAPHORE_H_ */

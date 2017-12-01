@@ -20,7 +20,7 @@ void print_usage (int count)
         count
     ) ;
     exit (EXIT_FAILURE) ;
-}
+} /* print_usage */
 
 /**
  *
@@ -45,7 +45,7 @@ int get_file_lines (char* filename)
     fclose (file) ;
 
     return lines ;
-}
+} /* get_file_lines */
 
 /**
  *
@@ -64,7 +64,7 @@ void gen_file_name (char* result, char *base_name)
         pid,
         save_nb
     ) ;
-}
+} /* gen_file_name */
 
 /**
  *
@@ -139,7 +139,7 @@ void read_lines (char *filename, char *save_dest, int begin, int rows)
         chars = 0 ;
         words = 0 ;
 
-        if (++total_words % 10000 == 0)
+        if (++total_words % SAVE_LIMIT == 0)
         {
             gen_file_name(out, save_dest), 
             write_file (
@@ -150,7 +150,7 @@ void read_lines (char *filename, char *save_dest, int begin, int rows)
         }
     }
     
-    gen_file_name(out, save_dest), 
+    gen_file_name(out, save_dest) ;
     write_file (
         out,
         words, 
@@ -160,7 +160,7 @@ void read_lines (char *filename, char *save_dest, int begin, int rows)
     printf("\t[Words checked: %d]\n", total_words) ;
     printf("\t[%d lines on %d]\n\n", checked_lines, get_file_lines(filename)) ;
     fclose (file) ; 
-}
+} /* read_lines */
 
 /**
  *
@@ -183,7 +183,7 @@ void write_file (char *filename, long int words, int count[])
     }
 
     fclose (file) ;
-}
+} /* write_file */
 
 /**
  *
@@ -212,4 +212,4 @@ int main(int argc, char const *argv[])
     ) ;
 
     return 0 ;
-}
+} /* main */
