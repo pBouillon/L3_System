@@ -16,6 +16,7 @@
 #include <unistd.h>
 
 #include "ressources.h"
+#include "semaphore.h"
 
 int  seg_id ;
 int* p_shared_variable ;
@@ -57,17 +58,72 @@ void create_child ()
 }
 
 /**
+ * \fn void sem_create_child ()
+ * \brief create one child and increments with semaphore
+ */
+void sem_create_child () 
+{
+    int pid, status, nb_sem, nb_tok, sem_id ;
+
+    sem_id = 0 ;
+    nb_sem = 1 ;
+    nb_tok = 1 ;
+
+    sem_create (&sem_id, nb_sem) ;
+    sem_init (sem_id, nb_sem - 1, nb_tok) ;
+
+    if ((pid = fork()) < 0) 
+    {
+        abort_prog ("Unable to perform `fork`", EXIT_FAILURE) ;
+    }
+    // Child process
+    else if (pid == 0) 
+    {
+        sem_increment (CHILD_STEP, nb_sem - 1, sem_id) ;
+        exit (EXIT_SUCCESS) ;
+    }
+    // Parent process
+    else 
+    {
+        sem_increment (FATHER_STEP, nb_sem - 1, sem_id) ;
+        wait (NULL) ;
+    }
+
+    sem_destroy (sem_id) ;
+}
+
+/**
  *
  */
 void increment (int step) 
 {
-    int i ;
+    int i, tmp ;
 
     for (i = 0; i < INCREMENTS; ++i)
     {
-        int tmp = *p_shared_variable ;
+        tmp = *p_shared_variable ;
         tmp += step ;
         *p_shared_variable = tmp ;
+    }
+}
+
+
+/**
+ *
+ */
+void sem_increment(int step, int sem_num, int sem_id) 
+{
+    int i, tmp ;
+
+    for (i = 0; i < INCREMENTS; ++i)
+    {
+        P (sem_id, sem_num) ;
+
+        tmp = *p_shared_variable ;
+        tmp+= step ;
+        *p_shared_variable = tmp ;
+
+        V (sem_id, sem_num) ;
     }
 }
 
@@ -95,20 +151,23 @@ void init_vars ()
             EXIT_FAILURE
         ) ;
     }
+
+    *p_shared_variable = 0 ;
 } /* init_vars () */
 
 int main(int argc, char const *argv[])
 {
     init_vars () ;
-    create_child() ;
+    // create_child() ;
+    sem_create_child() ;
 
     printf (
             "%s%d\n", 
             "shared_variable value: ", 
             (*p_shared_variable)
-        );
+        ) ;
     shmdt (p_shared_variable) ;
-    shmctl (seg_id, IPC_RMID, 0);
+    shmctl (seg_id, IPC_RMID, 0) ;
 
     return 0 ;
 }
