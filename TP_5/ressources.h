@@ -14,7 +14,7 @@ int  get_file_lines (char* filename) ;
 
 void gen_file_name (char *result, char *base_name) ;
 
-void print_usage () ;
+void print_usage (int count) ;
 
 void read_lines (
     char *filename, 

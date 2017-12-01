@@ -14,6 +14,7 @@
     # define DEBUG_PRINT(x) do {} while (0)
 #endif
 
+
 int  seg_id ;
 int* shared_rep ;
 
@@ -28,7 +29,7 @@ int abort_prog (char* msg, int err_id)
 } /* abort_prog */
 
 /**
- * \fn void create_child ()
+ * \fn void create_child
  * \brief create one child
  */
 void create_child (char *source_file, char *output) 
@@ -54,6 +55,7 @@ void create_child (char *source_file, char *output)
                 NO_OPT,
                 (char *)NULL
             ) ;
+        DEBUG_PRINT(("DEBUG -- %s\n", "CHILD: execl done")) ;
         if (ret != 0)
         {
             fprintf(stderr, "%s\n", "`execl` failed.");
@@ -65,12 +67,12 @@ void create_child (char *source_file, char *output)
     else 
     {
         waitpid(pid, &status, 0) ;
-        exit(EXIT_SUCCESS) ;
+        DEBUG_PRINT(("DEBUG -- %s\n", "FATHER: Child terminated")) ;
     }
 } /* create_child */
 
 /**
- *  void \fn init_vars
+ *  \fn init_vars
  */
 void init_vars () 
 {
@@ -84,6 +86,7 @@ void init_vars ()
             EXIT_FAILURE
         ) ;
     }
+    DEBUG_PRINT(("DEBUG -- %s\n", "Shared memory created")) ;
 
     shared_rep = (int*) shmat (seg_id, NULL, 0) ;
     if (shared_rep == NULL) 
@@ -94,21 +97,44 @@ void init_vars ()
         ) ;
     }
 
-    shared_rep[0] = 0 ;
+    
+    DEBUG_PRINT(("DEBUG -- %s\n", "Shared memory initialized")) ;
 
 } /* init_vars */
+
+/**
+ * \fn print_usage
+ */
+void print_usage (int count)
+{
+    fprintf (
+        stderr, 
+        "%s \n(given: %d)\n", 
+        "usage: ./prog <source> <destination> <begin> <rows>",
+        count
+    ) ;
+    exit (EXIT_FAILURE) ;
+} /* print_usage */
 
 /**
  *
  */
 int main(int argc, char const *argv[])
 {
-    DEBUG_PRINT(("%s\n", "Initializing Segment...")) ;
+    if (argc != 2) 
+    {
+        print_usage(argc) ;
+    }
+
+    DEBUG_PRINT(("DEBUG -- %s\n", "Initializing Segment...")) ;
     init_vars() ;
-    DEBUG_PRINT(("%s\n", "Operating fork...")) ;
+    
+    DEBUG_PRINT(("DEBUG -- %s\n", "Operating fork...")) ;
     create_child ((char*)argv[1], (char*)argv[2]) ;
-    DEBUG_PRINT(("%s\n", "Deleting Segment...")) ;
+    
+    DEBUG_PRINT(("DEBUG -- %s\n", "Deleting Segment...")) ;
     shmdt(shared_rep) ;
-    DEBUG_PRINT(("%s\n", "Exciting...")) ;
+    
+    DEBUG_PRINT(("DEBUG -- %s\n", "Exciting...")) ;
     return 0 ;
 } /* main */
