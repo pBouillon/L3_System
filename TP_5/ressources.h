@@ -2,15 +2,24 @@
 #define RESSOURCES_H_
 
 #define  ARGS_NUM        5
+
+#define  KEY_FILE        "./file_parser.c"
+#define  KEY_ID          42
+
 #define  BUFF_SIZE       1024
 #define  RES_FILE_NAME   100
+
 #define  SEPARATORS      " ,;:.!?\n"
 #define  SAVE_LIMIT      10000
+
 #define  WORDS_LEN       30
 
+#define  SHM_ID          1337
 #define  NO_OPT          "0"
 
 int  get_file_lines (char* filename) ;
+
+key_t gen_key() ;
 
 void gen_file_name (char *result, char *base_name) ;
 

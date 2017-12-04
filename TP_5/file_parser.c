@@ -1,12 +1,29 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
 #include <sys/types.h>
 #include <unistd.h>
 
 #include "ressources.h"
 
-int save_nb = 0 ;
+#ifdef DEBUG
+    # define DEBUG_PRINT(x) printf x
+#else
+    # define DEBUG_PRINT(x) do {} while (0)
+#endif
+
+
+int  save_nb = 0 ;
+int* shared_rep ;
+
+/**
+ *
+ */
+key_t gen_key() {
+    return ftok(KEY_FILE, KEY_ID) ;
+} /* gen_key */
 
 /**
  *
@@ -21,6 +38,26 @@ void print_usage (int count)
     ) ;
     exit (EXIT_FAILURE) ;
 } /* print_usage */
+
+/**
+ *
+ */
+void gen_file_name (char* result, char *base_name)
+{
+    pid_t pid ;
+
+    ++save_nb ;
+    pid = getpid() ;
+
+    DEBUG_PRINT(("DEBUG FILE -- %s\n", "Generating saving file name")) ;
+    sprintf (
+        result, 
+        "%s_%d_%d.txt", 
+        base_name, 
+        pid,
+        save_nb
+    ) ;
+} /* gen_file_name */
 
 /**
  *
@@ -50,21 +87,27 @@ int get_file_lines (char* filename)
 /**
  *
  */
-void gen_file_name (char* result, char *base_name)
+void get_shm_pointer() 
 {
-    pid_t pid ;
+    int seg_id ;
+    
+    seg_id = shmget (gen_key(), sizeof(int) * WORDS_LEN, 0) ;
+    if (seg_id < 0) 
+    {
+        fprintf(stderr, "%s\n", "Failed to create a shared memory space") ;
+        exit(EXIT_FAILURE) ;
+    }
+    DEBUG_PRINT(("DEBUG FILE -- %s\n", "Shared memory received")) ;
 
-    ++save_nb ;
-    pid = getpid() ;
-
-    sprintf (
-        result, 
-        "%s_%d_%d.txt", 
-        base_name, 
-        pid,
-        save_nb
-    ) ;
-} /* gen_file_name */
+    shared_rep = (int*) shmat (seg_id, NULL, 0) ;
+    if (shared_rep == NULL) 
+    {
+        fprintf(stderr, "%s\n", "Unable to get a pointer on shared memory") ;
+        exit(EXIT_FAILURE) ;
+    }
+    *shared_rep = 0 ;
+    DEBUG_PRINT(("DEBUG FILE -- %s\n", "Shared memory initialized")) ;
+} /* get_shm_pointer */
 
 /**
  *
@@ -96,6 +139,8 @@ void read_lines (char *filename, char *save_dest, int begin, int rows)
     {
         rows = get_file_lines(filename) ;
     }
+
+    DEBUG_PRINT(("DEBUG FILE -- %s\n", "Begin reading")) ;
     while (fgets(buff, BUFF_SIZE, file) 
         && checked_lines < rows)
     {
@@ -141,6 +186,7 @@ void read_lines (char *filename, char *save_dest, int begin, int rows)
 
         if (++total_words % SAVE_LIMIT == 0)
         {
+            DEBUG_PRINT(("DEBUG FILE -- %s\n", "Saving part of result")) ;
             gen_file_name(out, save_dest), 
             write_file (
                 out,
@@ -150,6 +196,7 @@ void read_lines (char *filename, char *save_dest, int begin, int rows)
         }
     }
     
+    DEBUG_PRINT(("DEBUG FILE -- %s\n", "Final save")) ;
     gen_file_name(out, save_dest) ;
     write_file (
         out,
@@ -159,6 +206,14 @@ void read_lines (char *filename, char *save_dest, int begin, int rows)
     printf("\n%s %s\n", "Last file generated:", out) ;
     printf("\t[Words checked: %d]\n", total_words) ;
     printf("\t[%d lines on %d]\n\n", checked_lines, get_file_lines(filename)) ;
+
+    DEBUG_PRINT(("DEBUG FILE -- %s\n", "Synchronizing ...")) ;
+    for (int i = 0; i < WORDS_LEN; ++i)
+    {
+        shared_rep[i] = repartition[i] ;
+    }
+    DEBUG_PRINT(("DEBUG FILE -- %s\n", "Synchronization success")) ;
+
     fclose (file) ; 
 } /* read_lines */
 
@@ -176,6 +231,7 @@ void write_file (char *filename, long int words, int count[])
        exit (EXIT_FAILURE) ;
     }
 
+    DEBUG_PRINT(("DEBUG FILE -- %s\n", "Saving ...")) ;
     fprintf(file, "%s\n", "Words checked: ") ;
     for (i = 0; i < WORDS_LEN; ++i)
     {
@@ -198,12 +254,16 @@ int main(int argc, char const *argv[])
         print_usage (argc) ;
     }
 
-    
+    DEBUG_PRINT(("DEBUG FILE -- %s\n", "Getting pointer")) ;
+    get_shm_pointer() ;
+
+    DEBUG_PRINT(("DEBUG FILE -- %s\n", "Getting args")) ;    
     source    = (char*)argv[1] ;
     dest_name = (char*)argv[2] ;
     begin  = atoi(argv[3]) ;
     rows   = atoi(argv[4]) ;
 
+    DEBUG_PRINT(("DEBUG FILE -- %s\n", "Start reading")) ;
     read_lines (
         source, 
         dest_name, 
