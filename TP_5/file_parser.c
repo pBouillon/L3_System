@@ -7,6 +7,7 @@
 #include <unistd.h>
 
 #include "ressources.h"
+#include "semaphore.h"
 
 #ifdef DEBUG
     # define DEBUG_PRINT(x) printf x
@@ -21,7 +22,8 @@ int* shared_rep ;
 /**
  *
  */
-key_t gen_key() {
+key_t gen_key() 
+{
     return ftok(KEY_FILE, KEY_ID) ;
 } /* gen_key */
 
@@ -119,7 +121,7 @@ void read_lines (char *filename, char *save_dest, int begin, int rows)
     char  buff[BUFF_SIZE] ;
     char  out[RES_FILE_NAME] ;
 
-    int   chars, words, total_words, checked_lines, i ;
+    int   chars, words, total_words, checked_lines, count;
     int   repartition[WORDS_LEN] = {0} ;
 
 
@@ -134,23 +136,22 @@ void read_lines (char *filename, char *save_dest, int begin, int rows)
     total_words = 0 ;
     checked_lines = 0 ;
 
-    i = 0 ;
     if (rows == 0) 
     {
         rows = get_file_lines(filename) ;
     }
 
-    DEBUG_PRINT(("DEBUG FILE -- %s\n", "Begin reading")) ;
-    while (fgets(buff, BUFF_SIZE, file) 
-        && checked_lines < rows)
+    DEBUG_PRINT(("DEBUG %d -- %s\n", getpid(),"Begin reading")) ;
+    count = 0 ;
+    while (fgets(buff, BUFF_SIZE, file) && checked_lines < rows)
     {
-        if (i < begin)
+        if (count < begin)
         {
-            ++i ;
+            ++count ;
             continue ;
         }
 
-        for (i = 0; i < strlen(buff); ++i) 
+        for (int i = 0; i < strlen(buff); ++i) 
         {
             if (strchr(SEPARATORS, buff[i]) != NULL)
             {
@@ -186,7 +187,7 @@ void read_lines (char *filename, char *save_dest, int begin, int rows)
 
         if (++total_words % SAVE_LIMIT == 0)
         {
-            DEBUG_PRINT(("DEBUG FILE -- %s\n", "Saving part of result")) ;
+            DEBUG_PRINT(("DEBUG %d -- %s\n", getpid(), "Saving part of result")) ;
             gen_file_name(out, save_dest), 
             write_file (
                 out,
@@ -194,9 +195,10 @@ void read_lines (char *filename, char *save_dest, int begin, int rows)
                 repartition
             ) ;
         }
+
     }
     
-    DEBUG_PRINT(("DEBUG FILE -- %s\n", "Final save")) ;
+    DEBUG_PRINT(("DEBUG %d -- %s\n", getpid(), "Final save")) ;
     gen_file_name(out, save_dest) ;
     write_file (
         out,
@@ -207,12 +209,12 @@ void read_lines (char *filename, char *save_dest, int begin, int rows)
     printf("\t[Words checked: %d]\n", total_words) ;
     printf("\t[%d lines on %d]\n\n", checked_lines, get_file_lines(filename)) ;
 
-    DEBUG_PRINT(("DEBUG FILE -- %s\n", "Synchronizing ...")) ;
+    DEBUG_PRINT(("DEBUG %d -- %s\n", getpid(), "Synchronizing ...")) ;
     for (int i = 0; i < WORDS_LEN; ++i)
     {
-        shared_rep[i] = repartition[i] ;
+        shared_rep[i] += repartition[i] ;
     }
-    DEBUG_PRINT(("DEBUG FILE -- %s\n", "Synchronization success")) ;
+    DEBUG_PRINT(("DEBUG %d -- %s\n", getpid(), "Synchronization success")) ;
 
     fclose (file) ; 
 } /* read_lines */
@@ -231,7 +233,7 @@ void write_file (char *filename, long int words, int count[])
        exit (EXIT_FAILURE) ;
     }
 
-    DEBUG_PRINT(("DEBUG FILE -- %s\n", "Saving ...")) ;
+    DEBUG_PRINT(("DEBUG %d -- %s\n", getpid(), "Saving ...")) ;
     fprintf(file, "%s\n", "Words checked: ") ;
     for (i = 0; i < WORDS_LEN; ++i)
     {
@@ -244,7 +246,7 @@ void write_file (char *filename, long int words, int count[])
 /**
  *
  */
-int main(int argc, char const *argv[])
+int main (int argc, char const *argv[])
 {
     int   begin, rows;
     char *source, *dest_name ;
@@ -254,16 +256,18 @@ int main(int argc, char const *argv[])
         print_usage (argc) ;
     }
 
-    DEBUG_PRINT(("DEBUG FILE -- %s\n", "Getting pointer")) ;
+    DEBUG_PRINT(("DEBUG %d -- %s\n", getpid(), "Getting pointer")) ;
     get_shm_pointer() ;
 
-    DEBUG_PRINT(("DEBUG FILE -- %s\n", "Getting args")) ;    
+    DEBUG_PRINT(("DEBUG %d -- %s\n", getpid(), "Getting args")) ;    
     source    = (char*)argv[1] ;
     dest_name = (char*)argv[2] ;
+
     begin  = atoi(argv[3]) ;
     rows   = atoi(argv[4]) ;
+    DEBUG_PRINT(("DEBUG %d -- start: %d | end: %d\n", getpid(), begin, rows)) ;
 
-    DEBUG_PRINT(("DEBUG FILE -- %s\n", "Start reading")) ;
+    DEBUG_PRINT(("DEBUG %d -- %s\n", getpid(), "Start reading")) ;
     read_lines (
         source, 
         dest_name, 

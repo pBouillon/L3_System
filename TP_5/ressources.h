@@ -17,6 +17,10 @@
 #define  SHM_ID          1337
 #define  NO_OPT          "0"
 
+#define  SEM_ID          0
+#define  SEM_NB          1
+#define  SEM_TOKEN_NB    1
+
 int  get_file_lines (char* filename) ;
 
 key_t gen_key() ;

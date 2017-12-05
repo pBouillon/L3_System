@@ -1,51 +1,50 @@
-C'est un des langages les plus utilisés car :
-il existe depuis le début des années 1970 ;
-il est fondé sur un standard ouvert ;
-de nombreux informaticiens le connaissent ;
-étant du plus bas niveau portable possible, il permet la minimisation de 
-l'allocation mémoire nécessaire et la maximisation de la performance,
-notamment par l'utilisation de pointeurs ;
-des compilateurs et bibliothèques logicielles existent sur la plupart 
-des architectures ;
-il a influencé de nombreux langages plus récents dont C++, Java, C# et 
-PHP ; sa syntaxe en particulier est largement reprise ;
-il met en œuvre un nombre restreint de concepts, ce qui facilite sa 
-maîtrise et l'écriture de compilateurs simples et rapides ;
-il ne spécifie pas rigidement le comportement du fichier exécutable 
-produit, ce qui aide à tirer parti des capacités propres à chaque 
-ordinateur ;
-il permet l'écriture de logiciels qui n'ont besoin d'aucun support à 
-l'exécution (ni bibliothèque logicielle ni machine virtuelle), au 
-comportement prévisible en temps d'exécution comme en consommation de 
-mémoire vive, comme des noyaux de système d'exploitation et des 
-logiciels embarqués.
-Ses principaux inconvénients sont :
-le peu de vérifications offertes par les compilateurs d'origine (K&R C), 
-et l'absence de vérifications à l'exécution, ce qui fait que des erreurs 
-qui auraient pu être automatiquement détectées lors du développement ne 
-l’étaient qu’à l'exécution, donc au prix d’un plantage du logiciel.
-Sous UNIX, on pouvait utiliser les utilitaires lint et cflow pour 
-éviter de tels mécomptes.
-Des vérifications sont ajoutées avec le temps, mais elles restent 
-partielles ;
-son approche de la modularité restée au niveau de ce qui se faisait au 
-début des années 1970, et largement dépassée depuis par d'autres 
-langages :
-il ne facilite pas la programmation orientée objet ;
-il ne permet pas de créer des espaces de noms ;
-la gestion d'exceptions très sommaire ;
-le support très limité de la généricité, malgré l’introduction des 
-expressions à type générique en C11 ;
-les subtilités de l'écriture de programmes portables, car le 
-comportement exact des exécutables dépend de l'ordinateur cible ;
-le support minimaliste de l'allocation de mémoire et des chaînes de 
-caractères, ce qui oblige les programmeurs à s'occuper de détails 
-fastidieux et sources de bugs ; il n'y a notamment pas de 
-ramasse-miettes standard ;
-les bugs graves qui peuvent être causés par un simple manque d'attention 
-du développeur ; tel le dépassement de tampon qui constitue une faille 
-de sécurité informatique exploitable par les logiciels malveillants ;
-certaines erreurs ne peuvent être détectées automatiquement qu'à l'aide 
-d'outils supplémentaires et non standardisés, comme lint et Valgrind ;
-la faible productivité du langage par rapport aux langages plus récents[
-réf. souhaitée].
+Dès lors la marche en avant peut difficilement se développer.
+La dernière nous est particulièrement sensible et nous paraît particulièrement urgente.
+Plusieurs indicateurs suggèrent que l'offre de politique est aujourd'hui loin de correspondre à la demande.
+Les sondages ne sont que l'un d'entre eux.
+L'abstention grandissante aux consultations électorales, confirmée encore en 2001 par les élections municipales, en est un autre.
+Elle n'entend pas remettre son destin entre les mains d'un président qui, une fois élu, n'en fera qu'à sa tête.
+Elle attend de ceux qui aspirent à la magistrature suprême un langage de clarté et de vérité.
+Il est encore temps de s'y employer.
+Ces questions étaient et demeurent légitimes.
+Six mois après, on peut tout de même se demander si les craintes exprimées alors n'étaient pas exagérées.
+Même si plusieurs d'entre eux ont formé des couples, ils l'ont fait avec une relative discrétion.
+D'autres émissions de télévision pénètrent ainsi dans l'intimité d'adolescents ou de jeunes adultes consentants.
+Ils n'en donnent pas l'impression.
+Les voilà devenus des célébrités, choyées, adulées, fêtées.
+Même ceux qui ont été éliminés prématurément profitent aujourd'hui de la situation.
+Quoi qu'il leur arrive, ils pourront difficilement soutenir que leur passage par le loft leur aura fait du tort.
+Mais, apparemment, ils ne sont pas dupes : ils ont su, disent-ils, saisir la chance qui passait.
+Peut-être avant tout le souvenir d'une vaste manifestation de la jeunesse, comme un chahut paisible, une mobilisation sage.
+De cet échange, les parents n'ont pas été écartés.
+On a souvent remarqué que les jeunes gens étaient suivis de très près par leurs mères.
+Ce ne fut pas une révolte, ce fut plutôt une tranquille affirmation de soi.
+Ni revendications ni doléances.
+Cette émission lui apportera la consécration et une place unique dans le paysage littéraire français.
+Pivot vieillissait, son émission et ses spectateurs aussi.
+Mais l'idée que tout pouvait s'arrêter a déclenché un coup de tonnerre.
+Un long moment de stupeur.
+Un mouvement de deuil national.
+La peur de voir sombrer une certaine image de la télévision de service public.
+Les rumeurs de son départ se multipliaient.
+C'était désormais officiel.
+Au mois de juin, il arrêterait son émission.
+Une longue cérémonie des adieux se mettait en place, en même temps qu'une impitoyable lutte pour sa succession.
+Le tout sous forme de rumeurs, d'intox et de règlements de comptes, par médias interposés.
+Il est regretté ici ou là, mais la page est bien tournée.
+Ces émissions restent tardives ou confidentielles.
+La question n'est pas là.
+Je suis sang n'est pas un spectacle pour âmes vacillantes.
+Anvers étant une ville tentée par les démons de l'extrême droite, on a vu comment l'amalgame a pris forme.
+Bref, c'est dire combien ce thème du sang reste tabou.
+C'est une orgie, sous forme de conte de fées.
+Sabbat convulsif d'une jouissance simulée.
+Peut-être a-t-elle tremblé de la peur d'être dupe, si mauvaise conseillère.
+Les montants de 2001 ne seront connus que dans trois mois, mais ils devraient être moins flamboyants.
+Ces arbres cachent la forêt : régulièrement, la courbe des chiffres d'affaires, secteur par secteur, tend à décroître.
+Elle était grillée.
+Pas la seconde.
+Certains constituent même des trésors de guerre ou esquissent des alliances, en prévision des bonnes affaires qu'une crise pourrait provoquer.
+Les collectionneurs, pour leur part, ont été mieux conseillés.
+Naguère, on leur vendait n'importe quoi à n'importe quel prix.
+Mais tous restent prêts à mettre la main au portefeuille quand apparaît un chef-d'oeuvre.
