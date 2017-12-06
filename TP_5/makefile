@@ -1,7 +1,7 @@
-DEBUG  := yes
-CC	   := gcc
+DEBUG  := no
+CC     := gcc
 CFLAGS := -W -Wall
-EXEC   := exec
+EXEC   := reader
 
 ifeq ($(DEBUG), yes)
 	CFLAGS += -DDEBUG
@@ -14,7 +14,7 @@ else
 	@echo "Génération en mode release"
 endif
 
-exec: main.o sem.o
+reader: main.o sem.o
 	$(CC) -o $@ $^ 
 
 main.o: main.c ressources.h

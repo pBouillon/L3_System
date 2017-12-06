@@ -12,6 +12,6 @@ int sem_destroy (int sem_id) ;
 int sem_init (int sem_id, int sem_num, int tokens) ;
 int sem_list (int* sem_id, int sem_num) ;
 
-int get_key () ;
+key_t get_key () ;
 
 #endif /* SEMAPHORE_H_ */

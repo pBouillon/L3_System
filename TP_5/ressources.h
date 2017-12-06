@@ -36,6 +36,10 @@ void read_lines (
     int rows
 ) ;
 
+void sig_handler (int signal) ;
+
+void set_mask () ;
+
 void write_file (
     char *filename, 
     long int words, 

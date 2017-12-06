@@ -19,6 +19,8 @@
 int  save_nb = 0 ;
 int* shared_rep ;
 
+int g_begin, g_end ;
+
 /**
  *
  */
@@ -207,7 +209,8 @@ void read_lines (char *filename, char *save_dest, int begin, int rows)
     ) ;
     printf("\n%s %s\n", "Last file generated:", out) ;
     printf("\t[Words checked: %d]\n", total_words) ;
-    printf("\t[%d lines on %d]\n\n", checked_lines, get_file_lines(filename)) ;
+    printf("\t[%d lines on %d]\n", checked_lines, get_file_lines(filename)) ;
+    printf("\t[From line %d for %d lines]\n\n", g_begin, g_end) ;
 
     DEBUG_PRINT(("DEBUG %d -- %s\n", getpid(), "Synchronizing ...")) ;
     for (int i = 0; i < WORDS_LEN; ++i)
@@ -266,6 +269,9 @@ int main (int argc, char const *argv[])
 
     begin  = atoi(argv[3]) ;
     rows   = atoi(argv[4]) ;
+
+    g_begin = begin ;
+    g_end   = rows ;
     DEBUG_PRINT(("DEBUG %d -- start: %d | end: %d\n", getpid(), begin, rows)) ;
 
     DEBUG_PRINT(("DEBUG %d -- %s\n", getpid(), "Start reading")) ;

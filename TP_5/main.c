@@ -28,12 +28,15 @@ int* shared_rep ;
  */
 int abort_prog (char* msg, int err_id) 
 {
+    fprintf (stderr, "%s\n", msg) ;
+
+    DEBUG_PRINT (("DEBUG EXIT -- Deleting shm id %d\n", seg_id)) ;
     shmdt (shared_rep) ;
     shmctl(seg_id, IPC_RMID, 0) ;
 
+    DEBUG_PRINT (("DEBUG EXIT -- Deleting sem id %d\n", sem_id)) ;
     sem_destroy(sem_id) ;
 
-    fprintf (stderr, "%s\n", msg) ;
     exit (err_id) ;
 } /* abort_prog */
 
@@ -55,7 +58,7 @@ void create_child (char *source_file, char *output, int processes)
     pid_t pid[processes] ;
 
     int lines, step ;
-    int begin, end  ;
+    int begin ;
 
     if (processes == 0)
     {
@@ -64,19 +67,14 @@ void create_child (char *source_file, char *output, int processes)
 
     lines = get_file_lines(source_file) ;
     step  = (int)lines/processes ;
-    DEBUG_PRINT (("Splitting in %d lines_n\n", step)) ;
-    begin = end = 0 ;
+
+    begin = 0 ;
 
     for (int i = 0; i < processes; ++i) 
     {
-        begin = end ;
         if (i == processes - 1) 
         {
-            end = 0 ;
-        }
-        else 
-        {
-            end  += step ;
+            step = 0 ;
         }
 
         if ((pid[i] = fork()) < 0) {
@@ -89,10 +87,10 @@ void create_child (char *source_file, char *output, int processes)
             char buff_b[4] ;
             char buff_e[4] ;
 
-            DEBUG_PRINT (("CHILD %d: b=%d e=%d\n", i, begin, end)) ;
+            DEBUG_PRINT (("CHILD %d: b=%d e=%d\n", i, begin, step)) ;
 
             snprintf(buff_b, 3, "%d", begin) ;
-            snprintf(buff_e, 3, "%d", end) ;
+            snprintf(buff_e, 3, "%d", step) ;
 
             P (sem_id, i) ;
             ret = execl (
@@ -114,10 +112,14 @@ void create_child (char *source_file, char *output, int processes)
             }
             exit(EXIT_SUCCESS) ;
         }
+
+        begin += step ;
     }
 
     // Parent process
     int l_tot = 0 ;
+
+    set_mask() ;
 
     for (int i = 0; i < processes; ++i)
     {
@@ -150,7 +152,7 @@ void create_child (char *source_file, char *output, int processes)
         printf (
             "of %s%d ", 
             (i >= 10) ? "" 
-                     : "0"
+                      : "0"
             , i
         ) ;
         printf (
@@ -191,6 +193,13 @@ int get_file_lines (char* filename)
  */
 void init_vars (int processes) 
 {
+    if (processes == 0)
+    {
+        ++processes ;
+    }
+
+    DEBUG_PRINT(("DEBUG MAIN -- %s\n", "Getting memory created")) ;
+
     seg_id = shmget (
         gen_key(), 
         sizeof(int) * WORDS_LEN, 
@@ -204,7 +213,6 @@ void init_vars (int processes)
             EXIT_FAILURE
         ) ;
     }
-    DEBUG_PRINT(("DEBUG MAIN -- %s\n", "Shared memory created")) ;
 
     shared_rep = (int*) shmat (seg_id, NULL, 0) ;
     if (shared_rep == NULL) 
@@ -215,15 +223,19 @@ void init_vars (int processes)
         ) ;
     }
 
-    for (int i = 0; i <WORDS_LEN; ++i)
+    DEBUG_PRINT(("DEBUG MAIN -- %s\n", "Initializing shared memory")) ;
+    for (int i = 0; i < WORDS_LEN; ++i)
     {
         shared_rep[i] = 0 ;
     }
 
-    DEBUG_PRINT(("DEBUG MAIN -- %s\n", "Shared memory initialized")) ;
-
     DEBUG_PRINT(("DEBUG MAIN -- %s\n", "Creating semaphores")) ;
     sem_create (&sem_id, processes) ;
+    if (sem_id < 0)
+    {
+        abort_prog ("Unable to create semaphores", EXIT_FAILURE) ;
+    }
+    
     DEBUG_PRINT(("DEBUG MAIN -- %s\n", "Initializing semaphores")) ;
     sem_init (sem_id, processes - 1, SEM_TOKEN_NB) ;
 } /* init_vars */
@@ -241,6 +253,28 @@ void print_usage (int count)
     ) ;
     exit (EXIT_FAILURE) ;
 } /* print_usage */
+
+/**
+ * \fn void set_mask
+ */
+void set_mask ()
+{
+    struct sigaction sa ;
+
+    sa.sa_handler = sig_handler ;
+    sa.sa_flags   = 0 ;
+    sigemptyset(&(sa.sa_mask)) ;
+    sigaction(SIGINT, &sa, NULL) ;;
+} /* set_mask */
+
+/**
+ * \fn void sig_handler (int signal) 
+ */
+void sig_handler (int signal)
+{
+    (void)signal ;  
+    abort_prog ("Execution interrupted", EXIT_FAILURE) ; 
+} /* sig_handler */
 
 /**
  *
