@@ -1,4 +1,4 @@
-DEBUG  := no
+DEBUG  := yes
 CC	   := gcc
 CFLAGS := -W -Wall
 EXEC   := exec

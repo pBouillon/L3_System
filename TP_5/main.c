@@ -19,6 +19,7 @@
 #define  MAX_FORKS    50
 
 int  sem_id ;
+int  seg_id ;
 int* shared_rep ;
 
 
@@ -27,8 +28,10 @@ int* shared_rep ;
  */
 int abort_prog (char* msg, int err_id) 
 {
-    shmdt(shared_rep) ;
-    sem_destroy(SEM_ID) ;
+    shmdt (shared_rep) ;
+    shmctl(seg_id, IPC_RMID, 0) ;
+
+    sem_destroy(sem_id) ;
 
     fprintf (stderr, "%s\n", msg) ;
     exit (err_id) ;
@@ -188,12 +191,10 @@ int get_file_lines (char* filename)
  */
 void init_vars (int processes) 
 {
-    int  seg_id ;
-
     seg_id = shmget (
-                gen_key(), 
-                sizeof(int) * WORDS_LEN, 
-                IPC_CREAT | 0660
+        gen_key(), 
+        sizeof(int) * WORDS_LEN, 
+        IPC_CREAT | 0660
     ) ;
     
     if (seg_id < 0) 
@@ -248,7 +249,7 @@ int main (int argc, char const *argv[])
 {
     if (argc != ARGS_NEEDED) 
     {
-        print_usage(argc) ;
+        print_usage (argc) ;
     }
     if (atoi(argv[3]) > MAX_FORKS) 
     {
@@ -263,10 +264,9 @@ int main (int argc, char const *argv[])
     
     DEBUG_PRINT(("DEBUG MAIN -- %s\n", "Deleting Segment...")) ;
     shmdt(shared_rep) ;
-
-    DEBUG_PRINT(("DEBUG MAIN -- %s\n", "Deleting Semaphores...")) ;
-    sem_destroy(SEM_ID) ;
     
     DEBUG_PRINT(("DEBUG MAIN -- %s\n", "Exciting...")) ;
+    abort_prog ("Exciting successfuly", EXIT_SUCCESS) ;
+
     return 0 ;
 } /* main */

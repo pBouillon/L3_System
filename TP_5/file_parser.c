@@ -214,6 +214,7 @@ void read_lines (char *filename, char *save_dest, int begin, int rows)
     {
         shared_rep[i] += repartition[i] ;
     }
+    shmdt(shared_rep) ;
     DEBUG_PRINT(("DEBUG %d -- %s\n", getpid(), "Synchronization success")) ;
 
     fclose (file) ; 
