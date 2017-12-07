@@ -1,4 +1,11 @@
-
+/**
+ * \file main.c
+ * \brief TP_5 launcher
+ * 
+ * \version 0.0.1
+ *
+ * \author Pierre Bouillon [https://pierrebouillon.tech/]
+ */
 
 /**
  * Time output:
@@ -29,22 +36,33 @@
 #include "ressources.h"
 #include "semaphore.h"
 
-// debug generation
+/**
+ * to generate debug if compiled with -DDEBUG
+ * do nothing if compiled without this flag
+ *
+ * usage:
+ *      DEBUG_PRINT (("%s\n", "This is a debug message")) ;
+ */
 #ifdef DEBUG
     # define DEBUG_PRINT(x) printf x
 #else
     # define DEBUG_PRINT(x) do {} while (0)
 #endif
 
-int  sem_id ;
-int  seg_id ;
-int* shared_rep ;
-
+int  sem_id ;     /*!< semaphore id  */
+int  seg_id ;     /*!< shared memory id  */
+int* shared_rep ; /*!< pointer to the shared memory */
 
 /**
- *  \fn abort_prog
+ * \fn    abort_prog
+ * \brief aborting function for main.c
+ *
+ * On exit, destroy the shared memory and the semaphore
+ *
+ * \param  msg     reason of the exit
+ * \param  err_id  exit code to return
  */
-int abort_prog (char* msg, int err_id) 
+void abort_prog (char* msg, int err_id) 
 {
     fprintf (stderr, "%s\n", msg) ;
 
@@ -59,7 +77,10 @@ int abort_prog (char* msg, int err_id)
 } /* abort_prog */
 
 /**
+ * \fn    gen_key
+ * \brief generate the key for the shared memory
  *
+ * \return the generated key
  */
 key_t gen_key() 
 {
@@ -67,49 +88,54 @@ key_t gen_key()
 } /* gen_key */
 
 /**
- * \fn void create_child
- * \brief create one child
+ * \fn    create_child
+ * \brief create childs
+ *
+ * Perform `processes` fork.s 
+ * Then make each child read a different part of `source_file`
+ * Finally prints shared memory content
+ * 
+ * \param  source_file  path to the file to read
+ * \param  output       begin of the name for the save file
+ * \param  processes    amount of fork to perform
  */
 void create_child (char *source_file, char *output, int processes) 
 {
-    int   status ;
+    int   status, ret ;
+    int   begin, lines, step ;
     pid_t pid[processes] ;
 
-    int lines, step ;
-    int begin ;
-
-    if (processes == 0)
-    {
-        ++processes ;
-    }
-
-    lines = get_file_lines(source_file) ;
-    step  = (int)lines/processes ;
-
     begin = 0 ;
+    // max lines of the source_file
+    lines = get_file_lines(source_file) ;
+    // calculating each steps between each process
+    step  = (int)lines/processes ;
 
     for (int i = 0; i < processes ; ++i) 
     {
+        // the last process reads the file to the end
         if (i == processes - 1) 
         {
             step = 0 ;
         }
 
-        if ((pid[i] = fork()) < 0) {
+        if ((pid[i] = fork()) < 0) 
+        {
             abort_prog ("Unable to perform `fork`.", EXIT_FAILURE) ;
         } 
 
         else if (pid[i] == 0) 
         {
-            int  ret ;
-            char buff_b[4] ;
-            char buff_e[4] ;
+            char buff_b[4] ; // buffer for begin
+            char buff_e[4] ; // buffer for end
 
             DEBUG_PRINT (("CHILD %d: \n\tbegin=%d step=%d\n", i, begin, step)) ;
 
+            // filling buffers
             snprintf(buff_b, 3, "%d", begin) ;
             snprintf(buff_e, 3, "%d", step) ;
 
+            // calling the reader to read `step` lines from `begin`
             ret = execl (
                 "./file_parser", 
                 "file_parser", 
@@ -125,15 +151,15 @@ void create_child (char *source_file, char *output, int processes)
                 abort_prog ("`execl` failed.", EXIT_FAILURE) ;
             }
         }
+        // increasing step for the next process
         begin += step ;
     }
 
-    // Parent process
-    int l_tot = 0 ;
-
+    /* Parent process */
+    // prevents remainings semaphore and shared memory on SIGINT
     set_mask() ;
 
-    int ret = 0 ;
+    // waits for all its subprocesses
     for (int i = 0; i < processes; ++i)
     {
         waitpid(pid[i], &status, 0) ;
@@ -142,6 +168,7 @@ void create_child (char *source_file, char *output, int processes)
             ++ret ;
         }
     }
+
     if (ret)
     {
         abort_prog ("Child excited with an error", EXIT_FAILURE) ;      
@@ -150,12 +177,8 @@ void create_child (char *source_file, char *output, int processes)
     DEBUG_PRINT(("DEBUG MAIN -- %s\n", "FATHER: Childs terminated")) ;
 
     DEBUG_PRINT(("DEBUG MAIN -- %s\n", "FATHER: Receiving ...")) ;
-    for (int i = 0; i < WORDS_LEN; ++i)
-    {
-        l_tot += shared_rep[i] ;
-    }
-
-    // Displays results as : X sentence[s] of [0]Y word[s]
+    
+    // Format and display results as: X sentence[s] of [0]Y word[s]
     for (int i = 0; i < WORDS_LEN; ++i)
     {
         printf (
@@ -182,7 +205,12 @@ void create_child (char *source_file, char *output, int processes)
 } /* create_child */
 
 /**
+ * \fn     get_file_lines
+ * \brief  get the number of lines for `filename`
  *
+ * \param  filename  file to read
+ *
+ * \return number of lines
  */
 int get_file_lines (char* filename)
 {
@@ -192,8 +220,7 @@ int get_file_lines (char* filename)
 
     if (!(file = fopen(filename, "r")))
     {
-       fprintf (stderr, "%s\n", "Cannot open file") ; 
-       exit (EXIT_FAILURE) ;
+        abort_prog("Cannot open file", EXIT_FAILURE) ;
     }
 
     lines = 0 ;
@@ -207,23 +234,17 @@ int get_file_lines (char* filename)
 } /* get_file_lines */
 
 /**
- *  \fn init_vars
+ * \fn     init_vars
+ * \brief  initialize the semaphore and the shared memory
  */
-void init_vars (int processes) 
+void init_vars () 
 {
-    if (processes == 0)
-    {
-        ++processes ;
-    }
-
-    DEBUG_PRINT(("DEBUG MAIN -- %s\n", "Getting memory created")) ;
-
+    // Create shared memory
     seg_id = shmget (
         gen_key(), 
         sizeof(int) * WORDS_LEN, 
         IPC_CREAT | 0660
     ) ;
-    
     if (seg_id < 0) 
     {
         abort_prog (
@@ -231,7 +252,9 @@ void init_vars (int processes)
             EXIT_FAILURE
         ) ;
     }
+    DEBUG_PRINT(("DEBUG MAIN -- %s\n", "Getting memory created")) ;
 
+    // Attached shared memory
     shared_rep = (int*) shmat (seg_id, NULL, 0) ;
     if (shared_rep == NULL) 
     {
@@ -241,21 +264,24 @@ void init_vars (int processes)
         ) ;
     }
 
-    DEBUG_PRINT(("DEBUG MAIN -- %s\n", "Initializing shared memory")) ;
+    // Initialized shared memory with 0
     for (int i = 0; i < WORDS_LEN; ++i)
     {
         shared_rep[i] = 0 ;
     }
+    DEBUG_PRINT(("DEBUG MAIN -- %s\n", "Shared memory initialized")) ;
 
-    DEBUG_PRINT(("DEBUG MAIN -- %s\n", "Creating semaphores")) ;
+    // Create semaphore
     sem_create (&sem_id, SEM_NB) ;
     if (sem_id < 0)
     { 
-        abort_prog ("Unable to create semaphores", EXIT_FAILURE) ;
+        abort_prog ("Unable to create semaphore", EXIT_FAILURE) ;
     }
+    DEBUG_PRINT(("DEBUG MAIN -- %s\n", "Semaphore created")) ;
     
-    DEBUG_PRINT(("DEBUG MAIN -- %s\n", "Initializing semaphores")) ;
-    sem_init (sem_id, processes - 1, SEM_TOKEN_NB) ;
+    // Initialize semaphore
+    sem_init (sem_id, SEM_NB, SEM_TOKEN_NB) ;
+    DEBUG_PRINT(("DEBUG MAIN -- %s\n", "Initializing semaphore")) ;
 } /* init_vars */
 
 /**
@@ -273,7 +299,8 @@ void print_usage (int count)
 } /* print_usage */
 
 /**
- * \fn void set_mask
+ * \fn     sig_mask
+ * \brief  set sigaction on SIGINT
  */
 void set_mask ()
 {
@@ -286,7 +313,12 @@ void set_mask ()
 } /* set_mask */
 
 /**
- * \fn void sig_handler (int signal) 
+ * \fn     sig_handler
+ * \brief  catches SIGINT 
+ *
+ * Avoid remaining semaphore or shared memory
+ *
+ * \param  signal  [UNUSED] signal catched
  */
 void sig_handler (int signal)
 {
@@ -295,24 +327,30 @@ void sig_handler (int signal)
 } /* sig_handler */
 
 /**
- *
+ * main
  */
 int main (int argc, char const *argv[])
 {
+    int processes ;
+
+    // if an incorrect number of arg is provided, prints usage
     if (argc != ARGS_MAIN) 
     {
         print_usage (argc) ;
     }
-    if (atoi(argv[3]) > MAX_FORKS) 
+
+    processes = atoi(argv[3]) ;
+    // error if processes < 1 or proccesses > 100
+    if (1 > processes || processes > MAX_FORKS)
     {
-        abort_prog ("Too many processes", EXIT_FAILURE) ;
+        abort_prog ("Incorrect number of processes", EXIT_FAILURE) ;
     }
 
     DEBUG_PRINT(("DEBUG MAIN -- %s\n", "Initializing Segment...")) ;
-    init_vars(atoi(argv[3])) ;
+    init_vars() ;
     
     DEBUG_PRINT(("DEBUG MAIN -- %s\n", "Operating forks...")) ;
-    create_child ((char*)argv[1], (char*)argv[2], atoi(argv[3])) ;
+    create_child ((char*)argv[1], (char*)argv[2], processes) ;
     
     DEBUG_PRINT(("DEBUG MAIN -- %s\n", "Deleting Segment...")) ;
     shmdt(shared_rep) ;
