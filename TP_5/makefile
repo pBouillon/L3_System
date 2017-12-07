@@ -1,32 +1,34 @@
-DEBUG    := no
 CC       := gcc
 CFLAGS   := -W -Wall
+DEBUG    := no
 DFLAGS   :=
 EXEC     := reader
 SUB_EXEC := file_parser
+
+all: $(EXEC) $(SUB_EXEC)
 
 ifeq ($(DEBUG), yes)
 	DFLAGS += -DDEBUG
 endif
 
-all: $(EXEC) $(SUB_EXEC)
 ifeq ($(DEBUG),yes)
-	@echo "Génération en mode debug"
+	@echo "Debug release"
 else
-	@echo "Génération en mode release"
-endif
+	@echo "Production release"
+endif	
+
 
 reader: main.o sem.o
-	$(CC) -o $@ $^ 
+	$(CC) -o $@ $^ $(DFLAGS)
 
 file_parser: file_parser.o sem.o
-	$(CC) -o $@ $^
+	$(CC) -o $@ $^ $(DFLAGS)
 
 file_parser.o: file_parser.c ressources.h
-	$(CC) -o $@ -c $< $(CFLAGS) $(DFLAGS)
+	$(CC) -o $@ -c $< $(CFLAGS)
 
 main.o: main.c ressources.h
-	$(CC) -o $@ -c $< $(CFLAGS) $(DFLAGS)
+	$(CC) -o $@ -c $< $(CFLAGS) 
 
 sem.o: semaphore.c semaphore.h
 	$(CC) -o $@ -c $< $(CFLAGS)

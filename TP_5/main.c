@@ -347,6 +347,12 @@ int main (int argc, char const *argv[])
         abort_prog ("Incorrect number of processes", EXIT_FAILURE) ;
     }
 
+    // if too many processes, doing one per line
+    if (processes > get_file_lines((char*)argv[1]))
+    {
+        processes = get_file_lines((char*)argv[1]) ;
+    }
+
     DEBUG_PRINT(("DEBUG MAIN -- %s\n", "Initializing Segment...")) ;
     init_vars() ;
     
