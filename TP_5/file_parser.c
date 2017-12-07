@@ -46,7 +46,7 @@ void print_usage (int count)
 /**
  *
  */
-void gen_file_name (char* result, char *base_name)
+void gen_file_name (char* result, char *base_name, int is_final)
 {
     pid_t pid ;
 
@@ -54,13 +54,24 @@ void gen_file_name (char* result, char *base_name)
     pid = getpid() ;
 
     DEBUG_PRINT(("DEBUG FILE -- %s\n", "Generating saving file name")) ;
-    sprintf (
-        result, 
-        "%s_%d_%d.txt", 
-        base_name, 
-        pid,
-        save_nb
-    ) ;
+    if(!is_final) 
+    {
+        sprintf (
+            result, 
+            "%s_%d_%d.txt", 
+            base_name, 
+            pid,
+            save_nb
+        ) ;
+    } 
+    else {
+        sprintf (
+            result, 
+            "%s_%d_final.txt", 
+            base_name, 
+            pid
+        ) ;
+    }
 } /* gen_file_name */
 
 /**
@@ -120,11 +131,12 @@ void read_lines (char *filename, char *save_dest, int begin, int rows)
 {
     FILE *file ;
 
-    char  buff[BUFF_SIZE] ;
-    char  out[RES_FILE_NAME] ;
+    char buff[BUFF_SIZE] ;
+    char out[RES_FILE_NAME] ;
 
-    int   chars, words, total_words, checked_lines, count;
-    int   repartition[WORDS_LEN] = {0} ;
+    int  chars, words, total_words, checked_lines, count;
+    int  repartition[WORDS_LEN] = {0} ;
+    int  sem_id ;
 
 
     if (!(file = fopen(filename, "r")))
@@ -153,7 +165,7 @@ void read_lines (char *filename, char *save_dest, int begin, int rows)
             continue ;
         }
 
-        for (int i = 0; i < strlen(buff); ++i) 
+        for (int i = 0; i < (int)strlen(buff); ++i) 
         {
             if (strchr(SEPARATORS, buff[i]) != NULL)
             {
@@ -190,7 +202,7 @@ void read_lines (char *filename, char *save_dest, int begin, int rows)
         if (++total_words % SAVE_LIMIT == 0)
         {
             DEBUG_PRINT(("DEBUG %d -- %s\n", getpid(), "Saving part of result")) ;
-            gen_file_name(out, save_dest), 
+            gen_file_name(out, save_dest, 0), 
             write_file (
                 out,
                 words, 
@@ -201,22 +213,34 @@ void read_lines (char *filename, char *save_dest, int begin, int rows)
     }
     
     DEBUG_PRINT(("DEBUG %d -- %s\n", getpid(), "Final save")) ;
-    gen_file_name(out, save_dest) ;
+
+    gen_file_name(out, save_dest, 1) ;
     write_file (
         out,
         words, 
         repartition
     ) ;
+
+    // Uncomment to see sub process state
+    /*
     printf("\n%s %s\n", "Last file generated:", out) ;
     printf("\t[Words checked: %d]\n", total_words) ;
     printf("\t[%d lines on %d]\n", checked_lines, get_file_lines(filename)) ;
     printf("\t[From line %d for %d lines]\n\n", g_begin, g_end) ;
+    */
 
-    DEBUG_PRINT(("DEBUG %d -- %s\n", getpid(), "Synchronizing ...")) ;
-    for (int i = 0; i < WORDS_LEN; ++i)
+    if (sem_list(&sem_id, SEM_NB))
     {
-        shared_rep[i] += repartition[i] ;
+        fprintf(stderr, "%s\n", "Unable to get semaphore.") ;
     }
+
+    P (sem_id, SEM_NB) ;
+        DEBUG_PRINT(("DEBUG %d -- %s\n", getpid(), "Synchronizing ...")) ;    
+        for (int i = 0; i < WORDS_LEN; ++i)
+        {
+            shared_rep[i] += repartition[i] ;
+        }
+    V (sem_id, SEM_NB) ; 
     shmdt(shared_rep) ;
     DEBUG_PRINT(("DEBUG %d -- %s\n", getpid(), "Synchronization success")) ;
 
@@ -230,6 +254,8 @@ void write_file (char *filename, long int words, int count[])
 {
     int   i ;
     FILE *file ;
+
+    (void)words ;
 
     if (!(file = fopen(filename, "w")))
     {
@@ -252,10 +278,10 @@ void write_file (char *filename, long int words, int count[])
  */
 int main (int argc, char const *argv[])
 {
-    int   begin, rows;
+    int   begin, rows ;
     char *source, *dest_name ;
 
-    if (argc != ARGS_NUM) 
+    if (argc != ARGS_READER) 
     {
         print_usage (argc) ;
     }
@@ -272,7 +298,7 @@ int main (int argc, char const *argv[])
 
     g_begin = begin ;
     g_end   = rows ;
-    DEBUG_PRINT(("DEBUG %d -- start: %d | end: %d\n", getpid(), begin, rows)) ;
+    DEBUG_PRINT(("DEBUG %d -- \n\tstart: %d | end: %d\n", getpid(), begin, rows)) ;
 
     DEBUG_PRINT(("DEBUG %d -- %s\n", getpid(), "Start reading")) ;
     read_lines (

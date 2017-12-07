@@ -1,3 +1,22 @@
+
+
+/**
+ * Time output:
+ *      For 1 process
+ *          >$ time ./reader l*.txt aaa 1
+ *          ./reader l*.txt aaa 1  0,00s user 0,00s system 0% cpu 0,002 total
+ *      For 2 processse
+ *          >$ time ./reader l*.txt aaa 2
+ *          ./reader l*.txt aaa 2  0,00s user 0,00s system 0% cpu 0,003 total
+ *      For 4 processes
+ *          >$ time ./reader l*.txt aaa 4
+ *          ./reader l*.txt aaa 4  0,00s user 0,00s system 0% cpu 0,003 total
+ *      For 8 processes
+ *          >$ time ./reader l*.txt aaa 8
+ *          ./reader l*.txt aaa 8  0,00s user 0,00s system 0% cpu 0,003 total
+ */
+
+// standards headers
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/ipc.h>
@@ -6,17 +25,16 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+// custom headers
 #include "ressources.h"
 #include "semaphore.h"
 
+// debug generation
 #ifdef DEBUG
     # define DEBUG_PRINT(x) printf x
 #else
     # define DEBUG_PRINT(x) do {} while (0)
 #endif
-
-#define  ARGS_NEEDED  4
-#define  MAX_FORKS    50
 
 int  sem_id ;
 int  seg_id ;
@@ -70,7 +88,7 @@ void create_child (char *source_file, char *output, int processes)
 
     begin = 0 ;
 
-    for (int i = 0; i < processes; ++i) 
+    for (int i = 0; i < processes ; ++i) 
     {
         if (i == processes - 1) 
         {
@@ -87,12 +105,11 @@ void create_child (char *source_file, char *output, int processes)
             char buff_b[4] ;
             char buff_e[4] ;
 
-            DEBUG_PRINT (("CHILD %d: b=%d e=%d\n", i, begin, step)) ;
+            DEBUG_PRINT (("CHILD %d: \n\tbegin=%d step=%d\n", i, begin, step)) ;
 
             snprintf(buff_b, 3, "%d", begin) ;
             snprintf(buff_e, 3, "%d", step) ;
 
-            P (sem_id, i) ;
             ret = execl (
                 "./file_parser", 
                 "file_parser", 
@@ -102,17 +119,12 @@ void create_child (char *source_file, char *output, int processes)
                 buff_e,
                 (char *)NULL
             ) ;
-            V (sem_id, i) ;
-
-            DEBUG_PRINT(("DEBUG MAIN -- (%d) %s\n", i, "CHILD: execl done")) ;
 
             if (ret != 0) 
             {
                 abort_prog ("`execl` failed.", EXIT_FAILURE) ;
             }
-            exit(EXIT_SUCCESS) ;
         }
-
         begin += step ;
     }
 
@@ -121,14 +133,20 @@ void create_child (char *source_file, char *output, int processes)
 
     set_mask() ;
 
+    int ret = 0 ;
     for (int i = 0; i < processes; ++i)
     {
         waitpid(pid[i], &status, 0) ;
         if (status != EXIT_SUCCESS) 
         {
-            abort_prog ("Child excited with an error", EXIT_FAILURE) ;
+            ++ret ;
         }
     }
+    if (ret)
+    {
+        abort_prog ("Child excited with an error", EXIT_FAILURE) ;      
+    }
+
     DEBUG_PRINT(("DEBUG MAIN -- %s\n", "FATHER: Childs terminated")) ;
 
     DEBUG_PRINT(("DEBUG MAIN -- %s\n", "FATHER: Receiving ...")) ;
@@ -230,9 +248,9 @@ void init_vars (int processes)
     }
 
     DEBUG_PRINT(("DEBUG MAIN -- %s\n", "Creating semaphores")) ;
-    sem_create (&sem_id, processes) ;
+    sem_create (&sem_id, SEM_NB) ;
     if (sem_id < 0)
-    {
+    { 
         abort_prog ("Unable to create semaphores", EXIT_FAILURE) ;
     }
     
@@ -281,13 +299,13 @@ void sig_handler (int signal)
  */
 int main (int argc, char const *argv[])
 {
-    if (argc != ARGS_NEEDED) 
+    if (argc != ARGS_MAIN) 
     {
         print_usage (argc) ;
     }
     if (atoi(argv[3]) > MAX_FORKS) 
     {
-        abort_prog ("Too many subprocesses", EXIT_FAILURE) ;
+        abort_prog ("Too many processes", EXIT_FAILURE) ;
     }
 
     DEBUG_PRINT(("DEBUG MAIN -- %s\n", "Initializing Segment...")) ;

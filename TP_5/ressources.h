@@ -1,7 +1,9 @@
 #ifndef RESSOURCES_H_
 #define RESSOURCES_H_
 
-#define  ARGS_NUM        5
+#define  ARGS_READER     5
+#define  ARGS_MAIN       4
+#define  MAX_FORKS       100
 
 #define  KEY_FILE        "./file_parser.c"
 #define  KEY_ID          42
@@ -25,7 +27,7 @@ int  get_file_lines (char* filename) ;
 
 key_t gen_key() ;
 
-void gen_file_name (char *result, char *base_name) ;
+void gen_file_name (char *result, char *base_name, int is_final) ;
 
 void print_usage (int count) ;
 
