@@ -285,7 +285,8 @@ void init_vars ()
 } /* init_vars */
 
 /**
- * \fn print_usage
+ * \fn     print_usage
+ * \brief  prints program usage
  */
 void print_usage (int count)
 {

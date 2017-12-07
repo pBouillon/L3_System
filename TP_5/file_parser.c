@@ -1,3 +1,13 @@
+/**
+ * \file file_parser.c
+ * \brief TP_5 launcher
+ * 
+ * \version 0.0.1
+ *
+ * \author Pierre Bouillon [https://pierrebouillon.tech/]
+ */
+
+// standards headers
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,23 +16,31 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+// custom headers
 #include "ressources.h"
 #include "semaphore.h"
 
+/**
+ * to generate debug if compiled with -DDEBUG
+ * do nothing if compiled without this flag
+ *
+ * usage:
+ *      DEBUG_PRINT (("%s\n", "This is a debug message")) ;
+ */
 #ifdef DEBUG
     # define DEBUG_PRINT(x) printf x
 #else
     # define DEBUG_PRINT(x) do {} while (0)
 #endif
 
-
-int  save_nb = 0 ;
-int* shared_rep ;
-
-int g_begin, g_end ;
+int  save_nb = 0 ; /*!< used for save's names and keep the count */
+int* shared_rep  ; /*!< pointer to the shared memory with `main.c` */
 
 /**
+ * \fn    gen_key
+ * \brief generate the key for the shared memory
  *
+ * \return the generated key
  */
 key_t gen_key() 
 {
@@ -30,21 +48,15 @@ key_t gen_key()
 } /* gen_key */
 
 /**
+ * \fn     gen_file_name
+ * \brief  generate the name of the file for the save
  *
- */
-void print_usage (int count) 
-{
-    fprintf (
-        stderr, 
-        "%s \n(given: %d)\n", 
-        "usage: ./prog <source> <destination> <begin> <rows>",
-        count
-    ) ;
-    exit (EXIT_FAILURE) ;
-} /* print_usage */
-
-/**
+ * Name is <base_name>_<pid>_<save_id|final>.txt
+ * _final if this is the last file saved
  *
+ * \param  result     buffer to fill with the name generated
+ * \param  base_name  begin of the name
+ * \param  is_final   1 if this is the last file; 0 otherwise
  */
 void gen_file_name (char* result, char *base_name, int is_final)
 {
@@ -75,7 +87,10 @@ void gen_file_name (char* result, char *base_name, int is_final)
 } /* gen_file_name */
 
 /**
+ * \fn      get_file_lines
+ * \brief   get the total lines of the file `filename`
  *
+ * \return  total lines numer
  */
 int get_file_lines (char* filename)
 {
@@ -100,7 +115,8 @@ int get_file_lines (char* filename)
 } /* get_file_lines */
 
 /**
- *
+ * \fn     get_shm_pointer
+ * \brief  get a pointer to the shared memory
  */
 void get_shm_pointer() 
 {
@@ -125,7 +141,29 @@ void get_shm_pointer()
 } /* get_shm_pointer */
 
 /**
+ * \fn     print_usage
+ * \brief  prints program usage
+ */
+void print_usage (int count) 
+{
+    fprintf (
+        stderr, 
+        "%s \n(given: %d)\n", 
+        "usage: ./prog <source> <destination> <begin> <rows>",
+        count
+    ) ;
+    exit (EXIT_FAILURE) ;
+} /* print_usage */
+
+/**
+ * \fn     read_lines
+ * \brief  from `filename` read `rows` lines from `begin` 
  *
+ * perform a save every `SAVE_LIMIT` rows
+ *
+ * \param  filename   file to read
+ * \param  save_dest  base name for the save
+ * \param  begin      line to start reading
  */
 void read_lines (char *filename, char *save_dest, int begin, int rows)
 {
@@ -221,12 +259,11 @@ void read_lines (char *filename, char *save_dest, int begin, int rows)
         repartition
     ) ;
 
-    // Uncomment to see sub process state
+    // Uncomment to see sub process progess
     /*
     printf("\n%s %s\n", "Last file generated:", out) ;
     printf("\t[Words checked: %d]\n", total_words) ;
     printf("\t[%d lines on %d]\n", checked_lines, get_file_lines(filename)) ;
-    printf("\t[From line %d for %d lines]\n\n", g_begin, g_end) ;
     */
 
     if (sem_list(&sem_id, SEM_NB))
@@ -248,7 +285,14 @@ void read_lines (char *filename, char *save_dest, int begin, int rows)
 } /* read_lines */
 
 /**
+ * \fn     write_file
+ * \brief  perform the save
  *
+ * write each `count` in `filename`
+ *
+ * \param  filename  file to write
+ * \param  words     [UNUSED] words read
+ * \param  count[]   words read for each line size
  */
 void write_file (char *filename, long int words, int count[]) 
 {
@@ -274,7 +318,7 @@ void write_file (char *filename, long int words, int count[])
 } /* write_file */
 
 /**
- *
+ * main
  */
 int main (int argc, char const *argv[])
 {
@@ -296,8 +340,6 @@ int main (int argc, char const *argv[])
     begin  = atoi(argv[3]) ;
     rows   = atoi(argv[4]) ;
 
-    g_begin = begin ;
-    g_end   = rows ;
     DEBUG_PRINT(("DEBUG %d -- \n\tstart: %d | end: %d\n", getpid(), begin, rows)) ;
 
     DEBUG_PRINT(("DEBUG %d -- %s\n", getpid(), "Start reading")) ;
