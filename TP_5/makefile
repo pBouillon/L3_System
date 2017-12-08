@@ -1,5 +1,5 @@
 CC       := gcc
-CFLAGS   := -W -Wall
+CFLAGS   := -std=gnu99 -W -Wall
 DEBUG    := no
 DFLAGS   :=
 EXEC     := reader
