@@ -8,24 +8,24 @@
  */
 
 /**
- * Time output with:
- *          - real : wall clock time - time from start to finish of the call
- *          - user : amount of CPU time spent in the kernel (outside the kernel) 
- *                   within the process
- *          - sys  : amount of CPU time spent in the kernel within the process
- *
+ * Time output with a 221675 lines text file:
  *      For 1 process
- *          >$ time ./reader l*.txt aaa 1
- *          ./reader l*.txt aaa 1  0,00s user 0,00s system 0% cpu 0,002 total
+ *          >$ time ./reader huge_extract.txt aaa 1
+ *          ./reader huge_extract.txt aaa 1  0,44s user 0,03s system 98% cpu 0,476 total
  *      For 2 processses
- *          >$ time ./reader l*.txt aaa 2
- *          ./reader l*.txt aaa 2  0,00s user 0,00s system 0% cpu 0,003 total
+ *          >$ time ./reader huge_extract.txt aaa 2
+ *          ./reader huge_extract.txt aaa 2  0,44s user 0,03s system 97% cpu 0,478 total
  *      For 4 processes
- *          >$ time ./reader l*.txt aaa 4
- *          ./reader l*.txt aaa 4  0,00s user 0,00s system 0% cpu 0,003 total
+ *          >$ time ./reader huge_extract.txt aaa 4
+ *          ./reader huge_extract.txt aaa 4  0,40s user 0,06s system 97% cpu 0,478 total
  *      For 8 processes
- *          >$ time ./reader l*.txt aaa 8
- *          ./reader l*.txt aaa 8  0,00s user 0,00s system 0% cpu 0,003 total
+ *          >$ time ./reader huge_extract.txt aaa 8
+ *          ./reader huge_extract.txt aaa 8  0,40s user 0,06s system 98% cpu 0,471 total
+ *
+ * real : wall clock time - time from start to finish of the call
+ * user : amount of CPU time spent in the kernel (outside the kernel) 
+ *        within the process
+ * sys  : amount of CPU time spent in the kernel within the process
  */
 
 // standards headers
