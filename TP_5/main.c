@@ -8,11 +8,16 @@
  */
 
 /**
- * Time output:
+ * Time output with:
+ *          - real : wall clock time - time from start to finish of the call
+ *          - user : amount of CPU time spent in the kernel (outside the kernel) 
+ *                   within the process
+ *          - sys  : amount of CPU time spent in the kernel within the process
+ *
  *      For 1 process
  *          >$ time ./reader l*.txt aaa 1
  *          ./reader l*.txt aaa 1  0,00s user 0,00s system 0% cpu 0,002 total
- *      For 2 processse
+ *      For 2 processses
  *          >$ time ./reader l*.txt aaa 2
  *          ./reader l*.txt aaa 2  0,00s user 0,00s system 0% cpu 0,003 total
  *      For 4 processes
