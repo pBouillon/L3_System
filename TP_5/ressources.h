@@ -1,9 +1,9 @@
 #ifndef RESSOURCES_H_
 #define RESSOURCES_H_
 
-#define  ARGS_READER     5   /*!< args required for the file_parser */
-#define  ARGS_MAIN       4   /*!< args required for the main  */
-#define  MAX_FORKS       100 /*!< fork limit */
+#define  ARGS_READER     5    /*!< args required for the file_parser */
+#define  ARGS_MAIN       4    /*!< args required for the main  */
+#define  MAX_FORKS       1000 /*!< fork limit */
 
 #define  KEY_FILE        "./file_parser.c" /*!< file used for ftok */
 #define  KEY_ID          42                /*!< key for ftok*/

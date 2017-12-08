@@ -21,6 +21,12 @@
  *      For 8 processes
  *          >$ time ./reader huge_extract.txt aaa 8
  *          ./reader huge_extract.txt aaa 8  0,40s user 0,06s system 98% cpu 0,471 total
+ *      For 100 processes
+ *          >$ time ./reader huge_extract.txt aaa 100
+ *          ./reader huge_extract.txt aaa 100  0,43s user 0,04s system 91% cpu 0,513 total
+ *      For 1000 processes
+ *          >$ time ./reader huge_extract.txt aaa 1000
+ *          ./reader huge_extract.txt aaa 1000  0,43s user 0,13s system 80% cpu 0,694 total
  *
  * real : wall clock time - time from start to finish of the call
  * user : amount of CPU time spent in the kernel (outside the kernel) 
