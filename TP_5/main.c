@@ -11,34 +11,24 @@
  * Time output with a 221675 lines text file:
  *      For 1 process
  *          >$ time ./reader huge_extract.txt aaa 1
- *          real	0m0.323s
- *          user	0m0.216s
- *          sys	    0m0.008s
+ *          real	0m0.419s
+ *          user	0m0.224s
+ *          sys	    0m0.000s
  *      For 2 processses
  *          >$ time ./reader huge_extract.txt aaa 2
- *          real	0m0.483s
- *          user	0m0.212s
- *          sys	    0m0.028s
+ *          real	0m0.401s
+ *          user	0m0.240s
+ *          sys     0m0.012s
  *      For 4 processes
  *          >$ time ./reader huge_extract.txt aaa 4
- *          real	0m0.372s
- *          user	0m0.220s
- *          sys  	0m0.004s
+ *          real	0m0.358s
+ *          user	0m0.208s
+ *          sys	    0m0.012s
  *      For 8 processes
  *          >$ time ./reader huge_extract.txt aaa 8
- *          real	0m0.421s
- *          user	0m0.260s
- *          sys	    0m0.000s
- *      For 100 processes
- *          >$ time ./reader huge_extract.txt aaa 100
- *          real	0m0.488s
- *          user	0m0.208s
- *          sys	    0m0.020s
- *      For 1000 processes
- *          >$ time ./reader huge_extract.txt aaa 1000
- *          real	0m3.034s
- *          user	0m0.240s
- *          sys	    0m0.080s
+ *          real	0m0.299s
+ *          user	0m0.216s
+ *          sys	    0m0.008s
  *
  * real : wall clock time - time from start to finish of the call
  * user : amount of CPU time spent in the kernel (outside the kernel) 
